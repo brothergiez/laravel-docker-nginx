@@ -6,8 +6,6 @@ data:
   nginx.conf: |
     user nginx;
     worker_processes auto;
-
-    error_log /var/log/nginx/error.log warn;
     pid /var/run/nginx.pid;
 
     events {
@@ -15,28 +13,33 @@ data:
     }
 
     http {
+        include /etc/nginx/sites-enabled/*.*;
         include /etc/nginx/mime.types;
         default_type application/octet-stream;
         sendfile on;
         keepalive_timeout 65;
         
         server {
-            listen 80;
-            server_name localhost; # Replace with your domain or IP address
-
-            root /var/www/html/public; # Path to your Laravel public directory
-
-            index index.php;
+            isten 80 default_server;
+            listen [::]:80 default_server;
+            index index.php index.html;
+            root /var/www/html/public; 
+            error_log  /var/log/nginx/app-error.log;
+            access_log /var/log/nginx/app-access.log;
 
             location / {
                 try_files $uri $uri/ /index.php?$query_string;
+                gzip_static on;
             }
 
             location ~ \.php$ {
-                fastcgi_pass 127.0.0.1:9000; # PHP-FPM port
+                try_files $uri =404;
+                fastcgi_split_path_info ^(.+\.php)(/.+)$;
+                fastcgi_pass 127.0.0.1:9000;
                 fastcgi_index index.php;
                 include fastcgi_params;
                 fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+                fastcgi_param PATH_INFO $fastcgi_path_info;
             }
 
             location ~ /\.ht {
