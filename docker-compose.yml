@@ -1,0 +1,29 @@
+version: '3'
+services:
+  laravel-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 9000:9000
+    environment:
+      - DB_CONNECTION=mysql
+      - DB_HOST=localhost
+      - DB_PORT=3306
+      - DB_DATABASE=laravel_app
+      - DB_USERNAME=db_username
+      - DB_PASSWORD=db_password
+      - APP_KEY=base64:goa6gXPQXp620j2nz1kd95ix70OVutzXHHPJyQ09+24=
+      - APP_NAME=Laravel
+      - APP_ENV=local
+      - APP_DEBUG=true
+      - APP_URL=http://localhost:8080
+
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    ports:
+      - 8080:80
+    depends_on:
+      - laravel-app
